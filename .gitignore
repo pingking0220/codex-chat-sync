@@ -1,0 +1,13 @@
+# Local/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Never store Codex credentials or databases here
+auth.json
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Generated logs
+*.log

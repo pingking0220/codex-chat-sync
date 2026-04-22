@@ -4,6 +4,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$remote = git remote
+if ($remote -contains "origin") {
+    git pull --rebase --autostash
+}
+
 & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "export-codex-sessions.ps1")
 
 $status = git status --porcelain
@@ -15,7 +20,6 @@ if ([string]::IsNullOrWhiteSpace($status)) {
 git add .
 git commit -m $Message
 
-$remote = git remote
 if ($remote -contains "origin") {
     git push
 }

@@ -1,28 +1,12 @@
 # Codex Chat Sync
 
-這個資料夾用來把本機 Codex 聊天紀錄匯出成 Markdown，並用 Git 同步到 GitHub。
+這個資料夾用來把本機 Codex 聊天紀錄匯出成 Markdown，並用 GitHub private repository 在多台電腦之間同步。
 
-## 使用方式
+建議 GitHub repository 一定要設為 private，因為聊天紀錄可能包含本機路徑、專案內容、指令輸出或個人資料。
 
-匯出目前本機所有 Codex 對話：
+## 目前這台電腦
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\export-codex-sessions.ps1
-```
-
-匯出後會產生：
-
-- `conversations/`：每個 Codex session 的 Markdown 檔
-- `conversations/index.md`：所有 session 的索引
-
-提交到 Git：
-
-```powershell
-git add .
-git commit -m "Sync Codex conversations"
-```
-
-第一次推到 GitHub 時，先在 GitHub 建一個 private repository，然後把 remote 加進來：
+第一次連到 GitHub：
 
 ```powershell
 git remote add origin https://github.com/YOUR_NAME/YOUR_REPO.git
@@ -30,17 +14,37 @@ git branch -M main
 git push -u origin main
 ```
 
-之後同步只要：
+日後同步：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\sync-codex-sessions.ps1
 ```
 
-## 隱私提醒
+## 學校另一台電腦
 
-建議 GitHub repository 設成 private。Codex 對話可能包含本機路徑、專案內容、指令輸出、API 設定片段或個人資料。
+在學校電腦上安裝 Git，登入 GitHub，然後 clone 同一個 private repo：
 
-預設匯出只包含 user / assistant 對話。若你真的想把工具呼叫與底層事件也輸出，可以加上：
+```powershell
+cd "$env:USERPROFILE\Documents"
+git clone https://github.com/YOUR_NAME/YOUR_REPO.git 同步計畫
+cd .\同步計畫
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-codex-sessions.ps1
+```
+
+之後兩台電腦都用同一個指令同步：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-codex-sessions.ps1
+```
+
+## 檔案說明
+
+- `conversations/`：匯出的 Codex session Markdown
+- `conversations/index.md`：所有 session 的索引
+- `scripts/export-codex-sessions.ps1`：只匯出，不提交
+- `scripts/sync-codex-sessions.ps1`：先 pull，再匯出、commit、push
+
+預設只匯出 user / assistant 對話。若你真的想把工具呼叫與底層事件也輸出：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\export-codex-sessions.ps1 -IncludeTools

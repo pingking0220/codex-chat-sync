@@ -9,9 +9,7 @@
 第一次連到 GitHub：
 
 ```powershell
-git remote add origin https://github.com/YOUR_NAME/YOUR_REPO.git
-git branch -M main
-git push -u origin main
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-github-repo.ps1
 ```
 
 日後同步：
@@ -43,6 +41,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\sync-codex-sessions.ps1
 - `conversations/index.md`：所有 session 的索引
 - `scripts/export-codex-sessions.ps1`：只匯出，不提交
 - `scripts/sync-codex-sessions.ps1`：先 pull，再匯出、commit、push
+- `scripts/setup-github-repo.ps1`：建立 GitHub private repo 並 push
+- `CODEX-WEB-GITHUB.md`：Codex 網頁版連 GitHub 的排查筆記
 
 預設只匯出 user / assistant 對話。若你真的想把工具呼叫與底層事件也輸出：
 

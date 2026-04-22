@@ -23,15 +23,27 @@ function Get-GhPath {
 
 $gh = Get-GhPath
 
-& $gh auth status *> $null
-if ($LASTEXITCODE -ne 0) {
+function Test-GhAuth {
+    param([string]$GhPath)
+
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $GhPath auth status 2>&1
+        return $LASTEXITCODE -eq 0
+    }
+    finally {
+        $ErrorActionPreference = $previous
+    }
+}
+
+if (-not (Test-GhAuth $gh)) {
     Write-Host "GitHub CLI is not logged in yet."
     Write-Host "A browser/device-code login will start now. Finish GitHub authorization, then run this script again if it stops here."
     & $gh auth login --hostname github.com --git-protocol https --web --clipboard --scopes repo
 }
 
-& $gh auth status
-if ($LASTEXITCODE -ne 0) {
+if (-not (Test-GhAuth $gh)) {
     throw "GitHub login was not completed."
 }
 

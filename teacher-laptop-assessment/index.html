@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>教師筆電需求評估工具</title>
+  <meta name="description" content="協助教師依據教學、行政、題庫光碟、電子書、剪輯與系統相容性需求，評估適合 MacBook Neo、MacBook Air 或 Windows 筆電。" />
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --green: #16a34a;
+      --amber: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif; background: radial-gradient(circle at top left, #dbeafe, transparent 30%), var(--bg); color: var(--text); line-height: 1.6; }
+    header { padding: 48px 20px 24px; text-align: center; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto 48px; }
+    .hero-title { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 12px; letter-spacing: -0.04em; }
+    .hero-subtitle { margin: 0 auto; max-width: 760px; color: var(--muted); font-size: 1.08rem; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; align-items: start; }
+    .card { background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid rgba(229, 231, 235, 0.8); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .question-card { padding: 24px; }
+    .section-title { margin: 0 0 8px; font-size: 1.35rem; letter-spacing: -0.02em; }
+    .section-desc { margin: 0 0 20px; color: var(--muted); }
+    .question { border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 14px 0; background: #fff; transition: 0.2s ease; }
+    .question:hover { transform: translateY(-1px); border-color: #bfdbfe; }
+    .question h3 { margin: 0 0 10px; font-size: 1rem; }
+    .options { display: grid; gap: 8px; }
+    label.option { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; background: #f9fafb; transition: 0.15s ease; }
+    label.option:has(input:checked) { border-color: var(--primary); background: #eff6ff; }
+    input[type="radio"], input[type="checkbox"] { margin-top: 5px; accent-color: var(--primary); }
+    .result-card { position: sticky; top: 18px; padding: 22px; }
+    .score-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 8px; }
+    .score-label { font-weight: 700; }
+    .score-num { font-weight: 800; }
+    .bar { height: 12px; background: #eef2ff; border-radius: 999px; overflow: hidden; }
+    .bar span { display: block; height: 100%; width: 0%; border-radius: 999px; transition: width 0.35s ease; }
+    .bar.mac span { background: var(--purple); }
+    .bar.air span { background: var(--green); }
+    .bar.win span { background: var(--primary); }
+    .recommendation { margin-top: 20px; padding: 18px; border-radius: 16px; background: #f8fafc; border: 1px solid var(--line); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.92rem; padding: 6px 10px; border-radius: 999px; margin-bottom: 8px; }
+    .badge.neo { background: #f3e8ff; color: #6d28d9; }
+    .badge.air { background: #dcfce7; color: #166534; }
+    .badge.win { background: #dbeafe; color: #1d4ed8; }
+    .badge.warn { background: #fef3c7; color: #92400e; }
+    .recommendation h2 { margin: 0 0 8px; font-size: 1.45rem; }
+    .recommendation p { margin: 8px 0; }
+    .small-list { margin: 12px 0 0; padding-left: 20px; color: var(--muted); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    button { appearance: none; border: 0; border-radius: 12px; padding: 12px 14px; font-weight: 800; cursor: pointer; transition: 0.15s ease; }
+    button.primary { background: var(--primary); color: white; }
+    button.secondary { background: #eef2ff; color: var(--primary-dark); }
+    button:hover { transform: translateY(-1px); }
+    .note { margin-top: 16px; padding: 14px; border-left: 5px solid var(--amber); background: #fffbeb; border-radius: 12px; color: #78350f; font-size: 0.95rem; }
+    .footer-note { margin-top: 22px; color: var(--muted); font-size: 0.92rem; text-align: center; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .result-card { position: static; } }
+    @media print { body { background: white; } header { padding-top: 16px; } .grid { grid-template-columns: 1fr; } .question-card { display: none; } .result-card { box-shadow: none; border: 1px solid #ccc; } .actions { display: none; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="hero-title">教師筆電需求評估工具</h1>
+    <p class="hero-subtitle">依據老師的教學平台、題庫光碟、電子書、剪輯、多工與系統相容性需求，快速判斷較適合 MacBook Neo、MacBook Air 或維持 Windows 筆電。</p>
+  </header>
+
+  <main class="wrap grid">
+    <section class="card question-card" aria-label="需求問題區">
+      <h2 class="section-title">請依照自己的實際需求勾選</h2>
+      <p class="section-desc">每一題選最符合的情況。結果會即時計算，並提供購買建議與注意事項。</p>
+      <div id="questions"></div>
+    </section>
+
+    <aside class="card result-card" aria-live="polite">
+      <h2 class="section-title">評估結果</h2>
+      <p class="section-desc">分數越高，代表越符合該類型筆電。</p>
+      <div class="score-row"><span class="score-label">MacBook Neo</span><span class="score-num" id="neoScore">0</span></div>
+      <div class="bar mac"><span id="neoBar"></span></div>
+      <div class="score-row"><span class="score-label">MacBook Air</span><span class="score-num" id="airScore">0</span></div>
+      <div class="bar air"><span id="airBar"></span></div>
+      <div class="score-row"><span class="score-label">Windows 筆電</span><span class="score-num" id="winScore">0</span></div>
+      <div class="bar win"><span id="winBar"></span></div>
+      <div class="recommendation" id="recommendation">
+        <span class="badge warn">尚未評估</span>
+        <h2>請先完成左側問題</h2>
+        <p>完成後會顯示最適合的筆電類型，以及購買前需要確認的風險。</p>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="copyResult()">複製結果</button>
+        <button class="secondary" onclick="window.print()">列印結果</button>
+        <button class="secondary" onclick="resetForm()">重新評估</button>
+        <button class="secondary" onclick="scrollToTop()">回到題目</button>
+      </div>
+      <div class="note">重要提醒：如果題庫光碟或電子書只能用 Windows 安裝版，建議優先考慮 Windows 筆電；若出版社提供完整網頁版下載與使用，才較適合轉 Mac。</div>
+    </aside>
+  </main>
+
+  <p class="footer-note">本工具為校內採購與個人購買前的需求評估參考，仍建議購買前實測出版社平台、校務系統與常用設備。</p>
+
+  <script>
+    const questions = [
+      { id: 'browser', title: '1. 你的日常工作主要在哪裡完成？', type: 'radio', options: [
+        { text: '大多在瀏覽器完成，例如 Google Classroom、雲端文件、Canva、Meet', scores: { neo: 18, air: 14, win: 8 } },
+        { text: '一半瀏覽器、一半安裝版軟體', scores: { neo: 8, air: 10, win: 14 } },
+        { text: '主要依賴 Windows 安裝版軟體', scores: { neo: 0, air: 2, win: 22 } }
+      ]},
+      { id: 'publisher', title: '2. 你使用出版社題庫、電子書的方式？', type: 'radio', options: [
+        { text: '幾乎不用題庫光碟或電子書安裝版', scores: { neo: 14, air: 12, win: 4 } },
+        { text: '有網頁版，且可以下載題目或教材，功能大致完整', scores: { neo: 12, air: 12, win: 8 } },
+        { text: '常用題庫光碟或電子書安裝版，Mac 無法安裝會造成困擾', scores: { neo: -12, air: -10, win: 30 } }
+      ]},
+      { id: 'software', title: '3. 是否有非 Windows 不可的校務或教學軟體？', type: 'radio', options: [
+        { text: '沒有，大多都有網頁版或替代工具', scores: { neo: 14, air: 14, win: 5 } },
+        { text: '偶爾有，但可以到辦公室 Windows 電腦處理', scores: { neo: 7, air: 9, win: 12 } },
+        { text: '經常需要，且工作中不可缺少', scores: { neo: -10, air: -8, win: 26 } }
+      ]},
+      { id: 'media', title: '4. 你是否常剪輯影片、處理大量照片或製作活動成果？', type: 'radio', options: [
+        { text: '很少，主要是文書、簡報、備課', scores: { neo: 16, air: 8, win: 8 } },
+        { text: '偶爾會剪短片或處理照片', scores: { neo: 7, air: 16, win: 10 } },
+        { text: '經常剪影片、修圖、多工，想要長期主力機', scores: { neo: -2, air: 28, win: 14 } }
+      ]},
+      { id: 'multi', title: '5. 多工需求程度？', type: 'radio', options: [
+        { text: '普通，通常只開瀏覽器、簡報、LINE 或 Meet', scores: { neo: 14, air: 12, win: 8 } },
+        { text: '偏高，常同時開很多分頁、PDF、簡報、圖片、AI 工具', scores: { neo: 3, air: 20, win: 14 } },
+        { text: '很高，會跑大型軟體或需要高規格擴充', scores: { neo: -4, air: 20, win: 20 } }
+      ]},
+      { id: 'ecosystem', title: '6. 是否已有 iPhone 或 iPad，且想使用 AirDrop、照片同步等功能？', type: 'radio', options: [
+        { text: '是，而且很想整合 Apple 生態系', scores: { neo: 14, air: 14, win: 0 } },
+        { text: '有，但可有可無', scores: { neo: 7, air: 7, win: 5 } },
+        { text: '沒有或不在意', scores: { neo: 0, air: 0, win: 8 } }
+      ]},
+      { id: 'adaptation', title: '7. 對從 Windows 轉 Mac 的適應意願？', type: 'radio', options: [
+        { text: '願意學習 Command 鍵、Finder、Mac 操作邏輯', scores: { neo: 12, air: 12, win: 0 } },
+        { text: '可以試試，但希望不要影響工作效率', scores: { neo: 5, air: 6, win: 10 } },
+        { text: '不想重新適應，希望維持原本操作方式', scores: { neo: -6, air: -5, win: 18 } }
+      ]},
+      { id: 'device', title: '8. 是否常連接學校設備？例如印表機、掃描器、互動白板、舊投影或特殊硬體', type: 'radio', options: [
+        { text: '很少，主要使用雲端與一般投影', scores: { neo: 10, air: 10, win: 5 } },
+        { text: '偶爾需要，但可以先確認相容性', scores: { neo: 5, air: 7, win: 12 } },
+        { text: '經常需要，且設備偏舊或驅動不明', scores: { neo: -8, air: -6, win: 22 } }
+      ]},
+      { id: 'budget', title: '9. 預算與使用年限考量？', type: 'radio', options: [
+        { text: '預算有限，只要能完成日常教學即可', scores: { neo: 18, air: 2, win: 12 } },
+        { text: '希望買一台用 4～5 年以上的主力機', scores: { neo: 3, air: 24, win: 12 } },
+        { text: '希望規格彈性大、相容性高、價格選擇多', scores: { neo: 0, air: 4, win: 20 } }
+      ]},
+      { id: 'role', title: '10. 你最接近哪一種使用者？', type: 'radio', options: [
+        { text: '輕量文書型：備課、簡報、雲端、會議為主', scores: { neo: 22, air: 10, win: 8 } },
+        { text: '長期主力型：剪輯、照片、多工、AI 工具、想要效能餘裕', scores: { neo: 2, air: 28, win: 12 } },
+        { text: '相容優先型：題庫、電子書、校務系統、設備驅動不能出問題', scores: { neo: -10, air: -6, win: 32 } }
+      ]}
+    ];
+    const maxScore = 190;
+    function renderQuestions() {
+      const container = document.getElementById('questions');
+      container.innerHTML = questions.map(q => `<article class="question"><h3>${q.title}</h3><div class="options">${q.options.map((opt, index) => `<label class="option"><input type="${q.type}" name="${q.id}" value="${index}" onchange="calculate()" /><span>${opt.text}</span></label>`).join('')}</div></article>`).join('');
+    }
+    function calculate() {
+      const totals = { neo: 0, air: 0, win: 0 };
+      let answered = 0;
+      const selectedTexts = [];
+      questions.forEach(q => {
+        const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+        if (!selected) return;
+        answered += 1;
+        const opt = q.options[Number(selected.value)];
+        selectedTexts.push(`${q.title} ${opt.text}`);
+        totals.neo += opt.scores.neo;
+        totals.air += opt.scores.air;
+        totals.win += opt.scores.win;
+      });
+      Object.keys(totals).forEach(k => totals[k] = Math.max(0, totals[k]));
+      updateScore('neo', totals.neo);
+      updateScore('air', totals.air);
+      updateScore('win', totals.win);
+      updateRecommendation(totals, answered, selectedTexts);
+    }
+    function updateScore(type, score) {
+      document.getElementById(`${type}Score`).textContent = score;
+      document.getElementById(`${type}Bar`).style.width = `${Math.min(100, Math.round(score / maxScore * 100))}%`;
+    }
+    function updateRecommendation(totals, answered, selectedTexts) {
+      const box = document.getElementById('recommendation');
+      if (answered < questions.length) {
+        box.innerHTML = `<span class="badge warn">已完成 ${answered}/${questions.length} 題</span><h2>請繼續完成評估</h2><p>完成全部題目後，系統會根據三類筆電分數提供建議。</p>`;
+        return;
+      }
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      const [winner, topScore] = sorted[0];
+      const secondScore = sorted[1][1];
+      const gap = topScore - secondScore;
+      const hasWinRisk = selectedTexts.some(t => t.includes('題庫光碟') || t.includes('電子書安裝版') || t.includes('非 Windows 不可') || t.includes('設備偏舊'));
+      let badgeClass = winner;
+      let title = '';
+      let summary = '';
+      let bullets = [];
+      if (winner === 'neo') {
+        title = '建議：MacBook Neo';
+        summary = '你的使用型態偏向輕量教學、雲端平台、文書、簡報與線上會議。若出版社題庫與電子書已有完整網頁版，MacBook Neo 是較經濟的入門選擇。';
+        bullets = ['適合：Google Classroom、Canva、簡報、備課、Meet、輕量文書。', '注意：不適合常剪片、大量多工或需要 Windows 安裝版題庫的老師。', '購買前請實測出版社網頁版是否能下載題目、開啟電子書與匯出檔案。'];
+      } else if (winner === 'air') {
+        title = '建議：MacBook Air';
+        summary = '你的需求較接近長期主力機，包含多工、影片剪輯、照片處理或希望使用年限較長。若題庫與電子書可用網頁版取代，MacBook Air 會比 Neo 更穩妥。';
+        bullets = ['適合：長期使用、剪輯影片、處理照片、大量分頁、多工與 AI 工具。', '注意：Air 效能較好，但仍無法直接安裝 Windows 專用題庫或電子書。', '若仍有少數 Windows 軟體需求，可保留辦公室 Windows 公用電腦作為備援。'];
+      } else {
+        badgeClass = 'win';
+        title = '建議：維持 Windows 筆電';
+        summary = '你的需求高度重視相容性，尤其可能需要題庫光碟、電子書安裝版、校務系統、出版社軟體或舊設備驅動。Windows 筆電是最穩定、風險最低的選擇。';
+        bullets = ['適合：題庫光碟、電子書安裝版、出版社專用軟體、校務系統與舊設備。', '優點：教學資源相容性最高，遇到臨時教學需求較不容易卡關。', '若想體驗 Mac，建議先作為第二台輔助機，不建議直接取代主力 Windows 筆電。'];
+      }
+      const caution = gap < 12 ? '<p><strong>補充判斷：</strong>前兩名分數接近，代表你的需求介於兩種設備之間，建議購買前先借用或實測 1～2 週。</p>' : '';
+      const risk = hasWinRisk && winner !== 'win' ? '<p><strong>相容性提醒：</strong>你有勾選 Windows 相容性相關需求，購買 Mac 前務必確認題庫、電子書與設備驅動是否可用網頁版或替代方案。</p>' : '';
+      box.innerHTML = `<span class="badge ${badgeClass}">完成評估</span><h2>${title}</h2><p>${summary}</p>${caution}${risk}<ul class="small-list">${bullets.map(b => `<li>${b}</li>`).join('')}</ul>`;
+    }
+    function copyResult() {
+      const resultText = document.getElementById('recommendation').innerText;
+      const scores = `MacBook Neo：${document.getElementById('neoScore').textContent} 分\nMacBook Air：${document.getElementById('airScore').textContent} 分\nWindows 筆電：${document.getElementById('winScore').textContent} 分`;
+      navigator.clipboard.writeText(`${scores}\n\n${resultText}`).then(() => alert('已複製評估結果')).catch(() => alert('複製失敗，請手動選取結果文字。'));
+    }
+    function resetForm() { document.querySelectorAll('input').forEach(input => input.checked = false); calculate(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function scrollToTop() { document.querySelector('.question-card').scrollIntoView({ behavior: 'smooth' }); }
+    renderQuestions();
+    calculate();
+  </script>
+</body>
+</html>

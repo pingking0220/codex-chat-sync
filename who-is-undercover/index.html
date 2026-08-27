@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>三人誰是臥底</title>
+<style>
+:root{
+  --bg:#f7f4ff;
+  --card:#ffffff;
+  --ink:#2a2540;
+  --muted:#7b748f;
+  --primary:#6f5cff;
+  --secondary:#ff8b61;
+  --success:#33b784;
+  --danger:#e85d75;
+  --shadow:0 18px 50px rgba(78,65,145,.16);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 8% 12%, #ffe6d9 0 10%, transparent 28%),
+    radial-gradient(circle at 90% 8%, #e7deff 0 12%, transparent 32%),
+    linear-gradient(135deg,#fff9f4,#f5f1ff);
+  color:var(--ink);
+  min-height:100vh;
+}
+.app{
+  width:min(94vw,620px);
+  margin:0 auto;
+  padding:24px 0 40px;
+}
+.header{
+  text-align:center;
+  margin-bottom:16px;
+}
+.logo{font-size:56px}
+h1{margin:4px 0 2px;font-size:32px}
+.subtitle{color:var(--muted);font-size:14px}
+.card{
+  background:rgba(255,255,255,.94);
+  border-radius:28px;
+  padding:24px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,.8);
+}
+.hidden{display:none}
+.center{text-align:center}
+.badge{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#eeeaff;
+  color:#5746d9;
+  font-weight:800;
+  font-size:13px;
+}
+.btn{
+  width:100%;
+  border:0;
+  border-radius:18px;
+  padding:15px 18px;
+  font-size:17px;
+  font-weight:800;
+  margin-top:12px;
+  cursor:pointer;
+  transition:.18s;
+}
+.btn:active{transform:scale(.985)}
+.primary{background:linear-gradient(135deg,var(--primary),#9279ff);color:#fff}
+.secondary{background:linear-gradient(135deg,#ff9a72,var(--secondary));color:#fff}
+.success{background:linear-gradient(135deg,#49cba0,var(--success));color:#fff}
+.ghost{background:#fff;border:2px solid #e1dcf5;color:#5b50b4}
+.danger{background:linear-gradient(135deg,#ef7a8f,var(--danger));color:#fff}
+input{
+  width:100%;
+  padding:14px 16px;
+  border:2px solid #e7e2f2;
+  border-radius:16px;
+  font-size:17px;
+  outline:none;
+  margin-top:10px;
+}
+input:focus{border-color:#9c8cff}
+.player-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin:18px 0 6px;
+}
+.player-chip{
+  padding:12px 8px;
+  border-radius:16px;
+  background:#f2eff9;
+  text-align:center;
+  font-weight:800;
+  color:#807993;
+}
+.player-chip.active{
+  outline:2px solid #9b8bff;
+  background:#ece7ff;
+  color:#5a48dc;
+}
+.player-chip.done{
+  background:#e7f8f0;
+  color:#2b8f69;
+}
+.cover{
+  height:240px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#6f5cff,#ff8b61);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  color:#fff;
+  margin-top:16px;
+}
+.cover .big{font-size:50px}
+.cover .title{font-size:20px;font-weight:800;margin-top:8px}
+.word-card{
+  height:240px;
+  border-radius:24px;
+  border:3px dashed #d9d2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  margin-top:16px;
+  background:#fff;
+}
+.word{
+  font-size:44px;
+  font-weight:900;
+  letter-spacing:1px;
+  margin-top:8px;
+}
+.muted{color:var(--muted);line-height:1.6}
+.topic-emoji{font-size:48px;margin:12px 0 4px}
+.topic-name{font-size:28px;font-weight:900}
+.spinner-wrap{display:flex;justify-content:center;margin:18px 0}
+.pointer{
+  width:0;height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:32px solid #302a43;
+  margin:0 auto -8px;
+  position:relative;z-index:2
+}
+.spinner{
+  width:230px;height:230px;border-radius:50%;
+  background:conic-gradient(#8b7cff 0 60deg,#ff9c72 60deg 120deg,#61cba2 120deg 180deg,#ffd66b 180deg 240deg,#70baff 240deg 300deg,#ef8ec9 300deg 360deg);
+  border:10px solid #fff;
+  box-shadow:0 16px 36px rgba(60,48,110,.18);
+  position:relative;
+  transition:transform 2.4s cubic-bezier(.18,.8,.2,1);
+}
+.spinner:after{
+  content:"🎤";
+  position:absolute;
+  inset:0;
+  margin:auto;
+  width:94px;height:94px;
+  display:flex;align-items:center;justify-content:center;
+  background:#fff;border-radius:50%;
+  font-size:46px;
+  box-shadow:0 8px 20px rgba(0,0,0,.1);
+}
+.order-box{
+  background:#f8f6ff;
+  border-radius:18px;
+  padding:16px;
+  margin-top:14px;
+  font-size:18px;
+  font-weight:800;
+  line-height:1.6;
+}
+.vote-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:16px;
+}
+.vote-btn{
+  padding:16px;
+  border-radius:18px;
+  border:2px solid #e2ddf5;
+  background:#fff;
+  font-size:18px;
+  font-weight:800;
+  cursor:pointer;
+}
+.vote-btn.selected{
+  border-color:#7a67ff;
+  background:#eeeaff;
+  color:#5643dc;
+}
+.result-box{
+  margin-top:16px;
+  padding:18px;
+  border-radius:20px;
+  background:#faf8ff;
+}
+.scoreboard{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:16px;
+}
+.score{
+  background:#f4f1fb;
+  border-radius:16px;
+  padding:12px 6px;
+  text-align:center;
+}
+.score b{display:block;font-size:22px;margin-top:4px}
+.small{font-size:13px;color:var(--muted)}
+hr{border:0;border-top:1px solid #eee9f6;margin:18px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">🕵️‍♀️🎡</div>
+    <h1>三人誰是臥底</h1>
+    <div class="subtitle">2 人同詞・1 人臥底・完整遊戲版</div>
+  </div>
+
+  <section id="setupScreen" class="card">
+    <div class="center">
+      <span class="badge">建立玩家</span>
+      <div class="topic-emoji">👥</div>
+      <div class="topic-name">輸入三位玩家名字</div>
+      <p class="muted">三人都會輪流秘密看自己的詞。</p>
+    </div>
+    <input id="name1" value="1號玩家" maxlength="12">
+    <input id="name2" value="2號玩家" maxlength="12">
+    <input id="name3" value="3號玩家" maxlength="12">
+    <button type="button" class="btn primary" data-action="startGame">開始遊戲</button>
+  </section>
+
+  <section id="topicScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">本局主題</span>
+      <div id="topicEmoji" class="topic-emoji">🎲</div>
+      <div id="topicName" class="topic-name">隨機抽題</div>
+      <p class="muted">這局的三個詞都會和同一主題相關。</p>
+    </div>
+    <button type="button" class="btn secondary" data-action="pickTopic">🎲 抽出本局主題</button>
+    <button type="button" id="topicNext" class="btn primary hidden" data-action="goSecret">開始秘密看詞</button>
+  </section>
+
+  <section id="secretScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">秘密發牌</span>
+      <div id="chips" class="player-grid"></div>
+      <h2 id="secretTitle"></h2>
+      <p class="muted">另外兩位先不要看螢幕。</p>
+    </div>
+    <div id="cover" class="cover">
+      <div class="big">🔒</div>
+      <div class="title">只有目前玩家可以看</div>
+    </div>
+    <div id="wordCard" class="word-card hidden">
+      <div class="small">你的秘密詞語</div>
+      <div id="secretWord" class="word"></div>
+      <div class="small" style="margin-top:12px;color:#b65a39">記住後請遮起來</div>
+    </div>
+    <button type="button" id="revealBtn" class="btn primary" data-action="revealWord">👀 顯示我的詞</button>
+    <button type="button" id="hideBtn" class="btn success hidden" data-action="finishSecret">✅ 我看完了，遮起來</button>
+  </section>
+
+  <section id="orderScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">決定發言順序</span>
+      <div class="pointer"></div>
+      <div class="spinner-wrap">
+        <div id="spinner" class="spinner"></div>
+      </div>
+      <div id="orderText" class="order-box">按下轉盤，決定誰先開始描述。</div>
+    </div>
+    <button type="button" id="spinBtn" class="btn secondary" data-action="spinOrder">🎡 轉動發言轉盤</button>
+    <button type="button" id="orderNext" class="btn primary hidden" data-action="goDiscuss">開始描述</button>
+  </section>
+
+  <section id="discussScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">描述階段</span>
+      <div class="topic-emoji">💬</div>
+      <div class="topic-name">輪流描述你的詞</div>
+      <p class="muted">不能直接說出答案，也不要講得太明顯。</p>
+      <div id="speakOrder" class="order-box"></div>
+    </div>
+    <button type="button" class="btn primary" data-action="goVote">描述完畢，開始投票</button>
+  </section>
+
+  <section id="voteScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">秘密投票</span>
+      <div id="voteTitle" class="topic-name" style="margin-top:12px"></div>
+      <p class="muted">請選你覺得最像臥底的人。</p>
+    </div>
+    <div id="voteButtons" class="vote-grid"></div>
+    <button type="button" id="confirmVoteBtn" class="btn primary hidden" data-action="confirmVote">確認這一票</button>
+  </section>
+
+  <section id="resultScreen" class="card hidden">
+    <div class="center">
+      <span class="badge">本局結果</span>
+      <div id="resultEmoji" class="topic-emoji">🎭</div>
+      <div id="resultTitle" class="topic-name"></div>
+    </div>
+    <div id="resultBox" class="result-box"></div>
+    <div id="scoreBoard" class="scoreboard"></div>
+    <button type="button" class="btn primary" data-action="nextRound">再玩一局</button>
+    <button type="button" class="btn ghost" data-action="resetAll">重新設定玩家</button>
+  </section>
+</div>
+
+<script>
+const sets = [
+  {topic:"水果",emoji:"🍓",normal:"草莓",undercover:"覆盆莓"},
+  {topic:"飲料",emoji:"🥤",normal:"可樂",undercover:"沙士"},
+  {topic:"速食",emoji:"🍔",normal:"漢堡",undercover:"三明治"},
+  {topic:"甜點",emoji:"🍰",normal:"蛋糕",undercover:"派"},
+  {topic:"動物",emoji:"🦁",normal:"老虎",undercover:"獅子"},
+  {topic:"海洋動物",emoji:"🐬",normal:"海豚",undercover:"鯨魚"},
+  {topic:"文具",emoji:"✏️",normal:"鉛筆",undercover:"自動鉛筆"},
+  {topic:"學校",emoji:"🏫",normal:"老師",undercover:"校長"},
+  {topic:"交通工具",emoji:"🚗",normal:"汽車",undercover:"計程車"},
+  {topic:"運動",emoji:"🏀",normal:"籃球",undercover:"排球"},
+  {topic:"早餐",emoji:"🍳",normal:"蛋餅",undercover:"蔥抓餅"},
+  {topic:"冰品",emoji:"🍦",normal:"冰淇淋",undercover:"霜淇淋"},
+  {topic:"App",emoji:"📱",normal:"YouTube",undercover:"TikTok"},
+  {topic:"娛樂",emoji:"🎬",normal:"電影",undercover:"影集"},
+  {topic:"旅行",emoji:"🧳",normal:"飯店",undercover:"民宿"},
+  {topic:"節日",emoji:"🎉",normal:"生日",undercover:"週年紀念"},
+  {topic:"電器",emoji:"💨",normal:"電風扇",undercover:"冷氣"},
+  {topic:"雨天用品",emoji:"🌧️",normal:"雨傘",undercover:"雨衣"},
+  {topic:"麵食",emoji:"🍜",normal:"拉麵",undercover:"烏龍麵"},
+  {topic:"零食",emoji:"🍟",normal:"洋芋片",undercover:"薯條"}
+];
+
+let players = [];
+let scores = [0,0,0];
+let gameSet = null;
+let undercover = 0;
+let words = [];
+let secretIndex = 0;
+let talkOrder = [];
+let voteIndex = 0;
+let currentVoteChoice = null;
+let votes = [0,0,0];
+
+function show(id){
+  ["setupScreen","topicScreen","secretScreen","orderScreen","discussScreen","voteScreen","resultScreen"]
+    .forEach(x=>document.getElementById(x).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function startGame(){
+  players = [
+    document.getElementById("name1").value.trim() || "1號玩家",
+    document.getElementById("name2").value.trim() || "2號玩家",
+    document.getElementById("name3").value.trim() || "3號玩家"
+  ];
+  scores = [0,0,0];
+  nextRound();
+}
+
+function nextRound(){
+  gameSet = null;
+  undercover = Math.floor(Math.random()*3);
+  secretIndex = 0;
+  voteIndex = 0;
+  votes = [0,0,0];
+  currentVoteChoice = null;
+  document.getElementById("topicEmoji").textContent="🎲";
+  document.getElementById("topicName").textContent="隨機抽題";
+  document.getElementById("topicNext").classList.add("hidden");
+  show("topicScreen");
+}
+
+function pickTopic(){
+  let candidate = sets[Math.floor(Math.random()*sets.length)];
+  gameSet = candidate;
+  words = [candidate.normal,candidate.normal,candidate.normal];
+  words[undercover] = candidate.undercover;
+  document.getElementById("topicEmoji").textContent=candidate.emoji;
+  document.getElementById("topicName").textContent=candidate.topic;
+  document.getElementById("topicNext").classList.remove("hidden");
+}
+
+function goSecret(){
+  secretIndex = 0;
+  show("secretScreen");
+  setupSecret();
+}
+
+function setupSecret(){
+  const chips = document.getElementById("chips");
+  chips.innerHTML = "";
+  players.forEach((p,i)=>{
+    const d = document.createElement("div");
+    d.className = "player-chip";
+    if(i < secretIndex) d.classList.add("done");
+    if(i === secretIndex) d.classList.add("active");
+    d.textContent = p;
+    chips.appendChild(d);
+  });
+  document.getElementById("secretTitle").textContent = `請把手機交給「${players[secretIndex]}」`;
+  document.getElementById("cover").classList.remove("hidden");
+  document.getElementById("wordCard").classList.add("hidden");
+  document.getElementById("revealBtn").classList.remove("hidden");
+  document.getElementById("hideBtn").classList.add("hidden");
+}
+
+function revealWord(){
+  document.getElementById("secretWord").textContent = words[secretIndex];
+  document.getElementById("cover").classList.add("hidden");
+  document.getElementById("wordCard").classList.remove("hidden");
+  document.getElementById("revealBtn").classList.add("hidden");
+  document.getElementById("hideBtn").classList.remove("hidden");
+}
+
+function finishSecret(){
+  secretIndex++;
+  if(secretIndex >= 3){
+    goOrder();
+  }else{
+    setupSecret();
+  }
+}
+
+function goOrder(){
+  document.getElementById("orderText").textContent="按下轉盤，決定誰先開始描述。";
+  document.getElementById("spinBtn").classList.remove("hidden");
+  document.getElementById("orderNext").classList.add("hidden");
+  document.getElementById("spinner").style.transform="rotate(0deg)";
+  show("orderScreen");
+}
+
+function spinOrder(){
+  const start = Math.floor(Math.random()*3);
+  talkOrder = [start,(start+1)%3,(start+2)%3];
+  const deg = 1440 + start*120 + Math.floor(Math.random()*100);
+  document.getElementById("spinner").style.transform=`rotate(${deg}deg)`;
+  document.getElementById("spinBtn").disabled=true;
+  setTimeout(()=>{
+    document.getElementById("orderText").textContent =
+      `發言順序：${players[talkOrder[0]]} → ${players[talkOrder[1]]} → ${players[talkOrder[2]]}`;
+    document.getElementById("spinBtn").classList.add("hidden");
+    document.getElementById("orderNext").classList.remove("hidden");
+    document.getElementById("spinBtn").disabled=false;
+  },2400);
+}
+
+function goDiscuss(){
+  document.getElementById("speakOrder").textContent =
+    `${players[talkOrder[0]]} → ${players[talkOrder[1]]} → ${players[talkOrder[2]]}`;
+  show("discussScreen");
+}
+
+function goVote(){
+  voteIndex = 0;
+  votes = [0,0,0];
+  currentVoteChoice = null;
+  show("voteScreen");
+  setupVote();
+}
+
+function setupVote(){
+  document.getElementById("voteTitle").textContent=`請「${players[voteIndex]}」投票`;
+  const box = document.getElementById("voteButtons");
+  box.innerHTML = "";
+  players.forEach((p,i)=>{
+    if(i === voteIndex) return;
+    const b = document.createElement("button");
+    b.className="vote-btn";
+    b.textContent=p;
+    b.dataset.voteIndex = i;
+    box.appendChild(b);
+  });
+  document.getElementById("confirmVoteBtn").classList.add("hidden");
+  currentVoteChoice = null;
+}
+
+function selectVote(index, btn){
+  currentVoteChoice = index;
+  document.querySelectorAll(".vote-btn").forEach(b=>b.classList.remove("selected"));
+  btn.classList.add("selected");
+  document.getElementById("confirmVoteBtn").classList.remove("hidden");
+}
+
+function confirmVote(){
+  if(currentVoteChoice===null) return;
+  votes[currentVoteChoice]++;
+  voteIndex++;
+  if(voteIndex>=3){
+    revealResult();
+  }else{
+    setupVote();
+  }
+}
+
+function revealResult(){
+  const max = Math.max(...votes);
+  const top = votes.map((v,i)=>v===max?i:-1).filter(i=>i>=0);
+  const caught = top.length===1 && top[0]===undercover;
+
+  if(caught){
+    document.getElementById("resultEmoji").textContent="🎉";
+    document.getElementById("resultTitle").textContent="平民抓到臥底！";
+    for(let i=0;i<3;i++){
+      if(i!==undercover) scores[i]++;
+    }
+  }else{
+    document.getElementById("resultEmoji").textContent="😈";
+    document.getElementById("resultTitle").textContent="臥底逃過一劫！";
+    scores[undercover]+=2;
+  }
+
+  document.getElementById("resultBox").innerHTML = `
+    <b>臥底：</b>${players[undercover]}<br>
+    <b>平民詞：</b>${gameSet.normal}<br>
+    <b>臥底詞：</b>${gameSet.undercover}<br>
+    <hr>
+    <b>投票結果：</b><br>
+    ${players.map((p,i)=>`${p}：${votes[i]} 票`).join("<br>")}
+  `;
+
+  document.getElementById("scoreBoard").innerHTML = players.map((p,i)=>`
+    <div class="score"><span class="small">${p}</span><b>${scores[i]}</b><span class="small">分</span></div>
+  `).join("");
+
+  show("resultScreen");
+}
+
+function resetAll(){
+  show("setupScreen");
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  const actionMap = {
+    startGame, pickTopic, goSecret, revealWord, finishSecret,
+    spinOrder, goDiscuss, goVote, confirmVote, nextRound, resetAll
+  };
+
+  document.body.addEventListener("click", function(e){
+    const voteButton = e.target.closest(".vote-btn");
+    if(voteButton && voteButton.dataset.voteIndex !== undefined){
+      selectVote(Number(voteButton.dataset.voteIndex), voteButton);
+      return;
+    }
+
+    const btn = e.target.closest("[data-action]");
+    if(!btn) return;
+    const fn = actionMap[btn.dataset.action];
+    if(typeof fn === "function") fn();
+  });
+
+  const status = document.createElement("div");
+  status.id = "jsStatus";
+  status.textContent = "✅ 遊戲已載入，可以開始";
+  status.style.cssText = "text-align:center;font-size:13px;color:#2b8f69;margin:8px 0 14px;font-weight:700;";
+  document.querySelector(".header").appendChild(status);
+});
+
+</script>
+</body>
+</html>
